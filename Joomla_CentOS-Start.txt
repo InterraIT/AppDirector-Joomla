@@ -1,0 +1,8 @@
+#!/bin/bash
+
+export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+set -e
+export http_proxy='http://proxy.vmware.com:3128'
+
+# restart apache server
+su --session-command="/etc/init.d/httpd restart"

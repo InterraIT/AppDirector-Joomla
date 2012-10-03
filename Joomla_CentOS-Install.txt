@@ -1,0 +1,49 @@
+#!/bin/bash
+
+export PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+set -e
+export http_proxy='http://proxy.vmware.com:3128'
+
+# Change for new version
+
+SOURCEPKG="Joomla_1.5.25-Stable-Full_Package.tar.gz"
+SOURCEWWW="http://joomlacode.org/gf/download/frsrelease/16026/69664/Joomla_1.5.25-Stable-Full_Package.tar.gz"
+#SOURCEWWW="http://joomlacode.org/gf/download/frsrelease/17173/74757/Joomla_2.5.6-Stable-Full_Package.tar.gz"
+
+# Get it
+
+cd /var/www/html
+mkdir joomla
+cd joomla
+wget $SOURCEWWW
+
+#Unpack it
+tar -zxvf Joomla_1.5.25-Stable-Full_Package.tar.gz
+
+# Cleanup
+rm -f $SOURCEPKG
+
+# CREATE JOOMLA DATABASE
+mysqladmin -h localhost -u root -pmysql123 create joomla_db
+
+#copy the content of configuration.php-dist into configuration.php
+#cp configuration.php-dist configuration.php
+
+mv configuration.php-dist configuration.php
+
+sed -ie "s|\$sitename.*|\$sitename = 'mysite.com';|g" configuration.php
+sed -ie "s|\$dbtype.*|\$dbtype = 'mysql';|g" configuration.php
+sed -ie "s|\$user.*|\$user = 'root';|g" configuration.php
+sed -ie "s|\$password.*|\$password = 'mysql123';|g" configuration.php
+sed -ie "s|\$db =.*|\$db = 'joomla_db';|g" configuration.php
+sed -ie "s|\$dbprefix =.*|\$dbprefix = 'jml_';|g" configuration.php
+sed -ie "s|\$mailfrom.*|\$mailfrom = 'kapily@site.com';|g" configuration.php
+sed -ie "s|\$fromname.*|\$fromname = 'mysite.com';|g" configuration.php
+sed -ie "s|\$log_path.*|\$log_path = 'var/www/html/joomla/logs';|g" configuration.php
+sed -ie "s|\$tmp_path.*|\$tmp_path = 'var/www/html/joomla/tmp';|g" configuration.php
+
+chmod -R 777 /var/www/html/joomla
+#rm -rf /var/www/html/joomla/installation/
+
+service httpd restart
+service mysqld restart
